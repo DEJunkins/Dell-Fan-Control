@@ -29,7 +29,7 @@
 # ============================================================================
 
 # Check interval in seconds / 检查间隔（秒）
-CHECK_INTERVAL=15
+CHECK_INTERVAL=5
 
 # Enable logging (true/false) / 启用日志（true/false）
 ENABLE_LOGGING=false
