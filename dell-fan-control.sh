@@ -130,7 +130,7 @@ get_nvme_temp() {
 # Function: Get maximum NVidia GPU temperature
 get_gpu_temp() {
     local temp
-    temp=$(nvidia-smi dmon -c 1 -s p --format nounit,noheader | awk '{print $2}' | sort -rn | head -1)
+    temp=$(nvidia-smi dmon -c 1 -s p --format nounit,noheader | awk '{print $3}' | sort -rn | head -1)
 
     # Return default value if reading fails
     if [ -z "$temp" ]; then
