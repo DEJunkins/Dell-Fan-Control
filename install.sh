@@ -11,8 +11,8 @@
 #   sudo ./install.sh
 #
 # Remote install / 远程安装:
-#   wget -qO- https://raw.githubusercontent.com/Evil0ctal/Dell-Fan-Control/main/install.sh | sudo bash
-#   curl -fsSL https://raw.githubusercontent.com/Evil0ctal/Dell-Fan-Control/main/install.sh | sudo bash
+#   wget -qO- https://raw.githubusercontent.com/DEJunkins/Dell-Fan-Control/main/install.sh | sudo bash
+#   curl -fsSL https://raw.githubusercontent.com/DEJunkins/Dell-Fan-Control/main/install.sh | sudo bash
 #
 
 set -e
@@ -25,7 +25,7 @@ SCRIPT_NAME="dell-fan-control.sh"
 SERVICE_NAME="dell-fan.service"
 INSTALL_DIR="/usr/local/bin"
 SERVICE_DIR="/etc/systemd/system"
-REPO_URL="https://raw.githubusercontent.com/Evil0ctal/Dell-Fan-Control/main"
+REPO_URL="https://raw.githubusercontent.com/DEJunkins/Dell-Fan-Control/main"
 
 # Colors for output / 输出颜色
 RED='\033[0;31m'
@@ -73,19 +73,18 @@ check_dependencies() {
         missing_deps+=("lm-sensors")
     fi
 
+    if ! command -v nvidia-smi &> /dev/null; then
+        missing_deps+=("nvidia-smi")
+    fi
+
     if [ ${#missing_deps[@]} -ne 0 ]; then
         print_warn "Missing dependencies / 缺少依赖: ${missing_deps[*]}"
         print_info "Installing dependencies / 正在安装依赖..."
 
-        apt update
-        apt install -y ipmitool lm-sensors
-
-        # Detect sensors / 检测传感器
-        print_info "Detecting sensors / 正在检测传感器..."
-        sensors-detect --auto
+        exit 1
+    else
+            print_info "All dependencies satisfied / 所有依赖已满足"
     fi
-
-    print_info "All dependencies satisfied / 所有依赖已满足"
 }
 
 # Download file from repository / 从仓库下载文件
@@ -177,6 +176,7 @@ show_status() {
     echo "  - Restart / 重启:            sudo systemctl restart dell-fan"
     echo "  - Stop / 停止:               sudo systemctl stop dell-fan"
     echo "  - Monitor / 监控:            watch -n 5 'sensors | grep -E \"Package|Composite\"'"
+    echo "  - Monitor GPU:               watch -n 5 'nvidia-smi'"
     echo ""
 }
 
