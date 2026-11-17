@@ -79,8 +79,6 @@ check_dependencies() {
 
     if [ ${#missing_deps[@]} -ne 0 ]; then
         print_warn "Missing dependencies / 缺少依赖: ${missing_deps[*]}"
-        print_info "Installing dependencies / 正在安装依赖..."
-
         exit 1
     else
             print_info "All dependencies satisfied / 所有依赖已满足"
