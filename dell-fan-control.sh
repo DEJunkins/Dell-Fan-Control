@@ -5,7 +5,7 @@
 #
 # Description / 描述:
 #   This script provides dynamic fan control for Dell PowerEdge servers
-#   based on CPU and NVMe temperatures. It disables Dell's aggressive
+#   based on CPU, GPU, and NVMe temperatures. It disables Dell's aggressive
 #   fan response to third-party PCIe devices.
 #
 #   本脚本为 Dell PowerEdge 服务器提供基于 CPU 和 NVMe 温度的动态风扇控制。
@@ -17,6 +17,7 @@
 # Requirements / 依赖:
 #   - ipmitool
 #   - lm-sensors
+#   - nvidia-smi
 #
 # Author / 作者: TikHub
 # License / 许可证: MIT
@@ -126,22 +127,38 @@ get_nvme_temp() {
     fi
 }
 
-# Function: Get maximum temperature (CPU or NVMe)
-# 函数：获取最高温度（CPU 或 NVMe）
+# Function: Get maximum NVidia GPU temperature
+get_gpu_temp() {
+    local temp
+    temp=$(nvidia-smi dmon -c 1 -s p --format nounit,noheader | awk '{print $2}' | sort -rn | head -1)
+
+    # Return default value if reading fails
+    if [ -z "$temp" ]; then
+        echo "75"
+    else
+        echo "$temp"
+    fi
+}
+
+
+# Function: Get maximum temperature (CPU, NVMe, or GPU)
 #
-# Returns the higher value between CPU and NVMe temperatures
-# 返回 CPU 和 NVMe 温度中的较高值
+# Returns the higher value between CPU, NVMe, and GPU temperatures
 get_max_temp() {
     local cpu_temp
     local nvme_temp
-    
+    local gpu_temp
+
     cpu_temp=$(get_cpu_temp)
     nvme_temp=$(get_nvme_temp)
-    
-    if [ "$nvme_temp" -gt "$cpu_temp" ]; then
+    gpu_temp=$(get_gpu_temp)
+
+    if [ "$nvme_temp" -gt "$cpu_temp" ] && [ "$nvme_temp" -gt "$gpu_temp" ]; then
         echo "$nvme_temp"
-    else
+    elif [ "$cpu_temp" -gt "$nvme_temp" ] && [ "$cpu_temp" -gt "$gpu_temp" ]; then
         echo "$cpu_temp"
+    else
+        echo "$gpu_temp"
     fi
 }
 
